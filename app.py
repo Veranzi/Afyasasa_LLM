@@ -12,7 +12,10 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # For local dev, restrict for production
+    allow_origins=[
+        "https://afya-sasa.vercel.app",
+        "http://localhost:3000"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -57,3 +60,7 @@ def ovarian_cyst_knowledge_assistant(request: QueryRequest):
         "source": "AfyaSasa_Bot Reasoning",
         "answer": response
     }
+
+@app.get("/")
+def root():
+    return {"message": "AfyaSasa LLM API is live. Use the /ask endpoint to query."}

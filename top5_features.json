@@ -1,0 +1,22 @@
+[
+  {
+    "feature": "Cyst Growth Rate cm/month",
+    "importance": 0.3514235577805564
+  },
+  {
+    "feature": "Cyst Size cm",
+    "importance": 0.23944452014415935
+  },
+  {
+    "feature": "CA 125 Level",
+    "importance": 0.12180011462666236
+  },
+  {
+    "feature": "Ultrasound Features",
+    "importance": 0.09364105789371921
+  },
+  {
+    "feature": "Age",
+    "importance": 0.08682329231733689
+  }
+]

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Ovarian Cyst Knowledge Assistant</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+    }
+    textarea, input, button {
+      padding: 10px;
+      font-size: 16px;
+      margin-top: 10px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .response {
+      margin-top: 20px;
+      white-space: pre-wrap;
+      border: 1px solid #ddd;
+      padding: 15px;
+      background: #f9f9f9;
+    }
+  </style>
+</head>
+<body>
+  <h1>Ovarian Cyst Knowledge Assistant</h1>
+
+  <label for="query">Ask a question:</label>
+  <textarea id="query" rows="4" placeholder="Type your question here..."></textarea>
+  <button onclick="askAssistant()">Submit</button>
+
+  <div id="result" class="response"></div>
+
+  <script>
+    async function askAssistant() {
+      const query = document.getElementById("query").value;
+
+      const response = await fetch("http://127.0.0.1:8000/ask", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ query })
+      });
+
+      const data = await response.json();
+      const resultDiv = document.getElementById("result");
+      resultDiv.innerHTML = `<strong>Source:</strong> ${data.source}<br><br><strong>Answer:</strong><br>${data.answer}`;
+    }
+  </script>
+</body>
+</html>

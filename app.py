@@ -18,7 +18,6 @@ scaler = joblib.load("scaler.joblib")
 features = joblib.load("final_features.joblib")
 numerical = joblib.load("numerical_columns.joblib")
 target_le = joblib.load("target_encoder.joblib")
-top5_features = pd.read_json("top5_features.json")
 
 # === Gemini Init ===
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
@@ -91,16 +90,30 @@ def predict_ovarian_cyst(request: PredictRequest):
     confidence = float(round(100 * probs[pred_index], 2))
     prob_dict = {target: float(round(p, 4)) for target, p in zip(target_le.classes_, probs)}
 
-    # LLM interpretation
     inventory_df = pd.read_csv("https://docs.google.com/spreadsheets/d/120UNDtWijskCdvZmrCGPTzMHNrk-Yl6-/export?format=csv")
     treatment_df = pd.read_csv("https://docs.google.com/spreadsheets/d/1cdhXfpLZw_3_yuu9wcpI0-50i0o6bnn-/export?format=csv")
+
     prompt = f"""
-    Model Prediction: {pred_class} ({confidence}%)\n
-    Probabilities: {prob_dict}\n
-    Inventory:\n{inventory_df.to_string(index=False)}\n
-    NHIF Costs:\n{treatment_df.to_string(index=False)}\n
-    Based on this, generate a clinical follow-up recommendation.
+You are a clinical assistant supporting gynecologists with ovarian cyst decisions.
+
+A machine learning model has predicted:
+- Management Plan: {pred_class}
+- Confidence Level: {confidence:.1f}%
+
+📦 Inventory:
+{inventory_df.to_string(index=False)}
+
+💰 Treatment Costs:
+{treatment_df.to_string(index=False)}
+
+Please generate a report including:
+1. A clinical interpretation of what this prediction means.
+2. Recommended management plan.
+3. Tools needed and availability across regions.
+4. NHIF vs. out-of-pocket cost estimation.
+5. Any clinical notes or cautions.
     """
+
     followup = chat.send_message(prompt).text.strip()
 
     return {
@@ -113,8 +126,18 @@ def predict_ovarian_cyst(request: PredictRequest):
 # === Follow-Up Endpoint ===
 @app.post("/follow-up")
 def follow_up(request: FollowUpRequest):
-    prompt = f"Previous:\n{request.previous_context}\nFollow-Up Question:\n{request.question}"
-    return {"followup_response": chat.send_message(prompt).text.strip()}
+    prompt = f"""
+A gynecologist has a follow-up question related to the previous case:
+
+🔁 Previous Context:
+{request.previous_context}
+
+❓ Question:
+{request.question}
+
+Please respond clearly based on the earlier interpretation, inventory, and clinical standards.
+"""
+    return {"response": chat.send_message(prompt).text.strip()}
 
 # === General Ask Endpoint ===
 @app.post("/ask")
